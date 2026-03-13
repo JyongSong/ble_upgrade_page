@@ -1,0 +1,149 @@
+const form = document.querySelector("#upgrade-form");
+const snInput = document.querySelector("#sn");
+const contactInput = document.querySelector("#contact");
+const message = document.querySelector("#message");
+const summary = document.querySelector("#device-summary");
+const modal = document.querySelector("#payment-modal");
+const purchaseButton = document.querySelector("#purchase-button");
+const confirmPaymentButton = document.querySelector("#confirm-payment");
+const cancelPaymentButton = document.querySelector("#cancel-payment");
+
+let validatedPayload = null;
+let isSubmitting = false;
+
+function setMessage(text, type = "") {
+  message.textContent = text;
+  message.className = `message ${type}`.trim();
+}
+
+function setLoadingState(loading) {
+  isSubmitting = loading;
+  purchaseButton.disabled = loading;
+  confirmPaymentButton.disabled = loading;
+  purchaseButton.textContent = loading ? "처리 중..." : "유료 업그레이드 결제";
+}
+
+function isValidContact(value) {
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phonePattern = /^\+?[0-9\-()\s]{7,20}$/;
+  return emailPattern.test(value) || phonePattern.test(value);
+}
+
+function normalizePayload() {
+  return {
+    sn: snInput.value.trim().toUpperCase(),
+    contact: contactInput.value.trim()
+  };
+}
+
+function renderSummary(device) {
+  summary.innerHTML = `
+    <strong>기기 확인 완료</strong><br />
+    SN: ${device.sn}<br />
+    현재 구매 상태: ${device.purchaseStatus === "paid" ? "결제 완료" : "미결제"}
+  `;
+  summary.classList.remove("hidden");
+}
+
+function hideSummary() {
+  summary.classList.add("hidden");
+  summary.innerHTML = "";
+}
+
+async function postJson(url, payload) {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || "요청 처리에 실패했습니다.");
+  }
+
+  return result;
+}
+
+function openModal() {
+  modal.classList.remove("hidden");
+}
+
+function closeModal() {
+  modal.classList.add("hidden");
+}
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  if (isSubmitting) {
+    return;
+  }
+
+  const payload = normalizePayload();
+  hideSummary();
+  validatedPayload = null;
+
+  if (!payload.sn) {
+    setMessage("기기 SN을 입력해 주세요.", "error");
+    return;
+  }
+
+  if (!payload.contact || !isValidContact(payload.contact)) {
+    setMessage("유효한 휴대폰 번호 또는 이메일을 입력해 주세요.", "error");
+    return;
+  }
+
+  try {
+    setLoadingState(true);
+    const result = await postJson("/api/validate", payload);
+    validatedPayload = payload;
+    renderSummary(result.device);
+    setMessage(result.message, "success");
+    openModal();
+  } catch (error) {
+    setMessage(error.message, "error");
+  } finally {
+    setLoadingState(false);
+  }
+});
+
+confirmPaymentButton.addEventListener("click", async () => {
+  if (!validatedPayload || isSubmitting) {
+    return;
+  }
+
+  try {
+    setLoadingState(true);
+    const result = await postJson("/api/purchase", validatedPayload);
+    renderSummary(result.device);
+    setMessage(result.message, "success");
+    closeModal();
+  } catch (error) {
+    setMessage(error.message, "error");
+  } finally {
+    setLoadingState(false);
+  }
+});
+
+cancelPaymentButton.addEventListener("click", () => {
+  closeModal();
+  setMessage("결제가 취소되어 업그레이드 상태는 변경되지 않았습니다.");
+});
+
+modal.addEventListener("click", (event) => {
+  if (event.target === modal) {
+    closeModal();
+  }
+});
+
+[snInput, contactInput].forEach((input) => {
+  input.addEventListener("input", () => {
+    validatedPayload = null;
+    hideSummary();
+    setMessage("");
+  });
+});

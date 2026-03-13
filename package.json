@@ -1,0 +1,12 @@
+{
+  "name": "ble-upgrade-page",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Paid BLE to Zigbee upgrade page",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
