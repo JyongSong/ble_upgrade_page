@@ -117,8 +117,22 @@ h1 {
   gap: 8px;
 }
 
+.field-guide {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
 .field span {
   font-weight: 600;
+}
+
+.sn-input-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
 }
 
 .field input {
@@ -168,6 +182,11 @@ h1 {
   color: var(--text);
 }
 
+.scan-button {
+  min-width: 108px;
+  white-space: nowrap;
+}
+
 .message {
   min-height: 28px;
   margin: 18px 4px 0;
@@ -211,6 +230,46 @@ h1 {
   box-shadow: var(--shadow);
 }
 
+.scanner-card {
+  width: min(560px, 100%);
+}
+
+.scanner-preview-wrap {
+  margin-top: 18px;
+  min-height: 280px;
+  border-radius: 22px;
+  overflow: hidden;
+  background: #061120;
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.scanner-video {
+  width: 100%;
+  min-height: 280px;
+  object-fit: cover;
+  display: block;
+}
+
+.scanner-fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  text-align: center;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.88);
+  background: rgba(6, 17, 32, 0.9);
+}
+
+.scanner-message {
+  min-height: 24px;
+  margin: 14px 0 0;
+  color: var(--muted);
+}
+
 .modal-actions {
   display: flex;
   justify-content: flex-end;
@@ -227,5 +286,9 @@ h1 {
   .hero,
   .panel {
     padding: 24px;
+  }
+
+  .sn-input-row {
+    grid-template-columns: 1fr;
   }
 }

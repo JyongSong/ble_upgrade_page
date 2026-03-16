@@ -26,7 +26,11 @@
         <form id="upgrade-form" class="upgrade-form">
           <label class="field">
             <span>기기 SN</span>
-            <input id="sn" name="sn" type="text" placeholder="예: A01460/LS1ELU01801" autocomplete="off" required />
+            <p class="field-guide">QR 코드는 내기 우측에 있습니다. 카메라로 스캔하거나 직접 입력해 주세요.</p>
+            <div class="sn-input-row">
+              <input id="sn" name="sn" type="text" placeholder="예: A01460/LS1ELU01801" autocomplete="off" required />
+              <button id="scan-button" class="ghost-button scan-button" type="button">QR 스캔</button>
+            </div>
           </label>
 
           <label class="field">
@@ -60,6 +64,24 @@
         <div class="modal-actions">
           <button id="cancel-payment" class="ghost-button" type="button">취소</button>
           <button id="confirm-payment" class="purchase-button" type="button">데모 결제 완료</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="scanner-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="scanner-title">
+      <div class="modal-card scanner-card">
+        <p class="eyebrow">QR Scanner</p>
+        <h2 id="scanner-title">기기 QR 스캔</h2>
+        <p class="modal-text">카메라를 QR 코드에 맞춰 주세요. 인식되면 SN이 자동으로 입력됩니다.</p>
+        <div class="scanner-preview-wrap">
+          <video id="scanner-video" class="scanner-video" autoplay playsinline muted></video>
+          <div id="scanner-fallback" class="scanner-fallback hidden">
+            이 브라우저에서는 실시간 QR 스캔을 지원하지 않습니다. SN을 직접 입력해 주세요.
+          </div>
+        </div>
+        <p id="scanner-message" class="scanner-message" aria-live="polite"></p>
+        <div class="modal-actions">
+          <button id="close-scanner" class="ghost-button" type="button">닫기</button>
         </div>
       </div>
     </div>

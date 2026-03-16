@@ -4,16 +4,29 @@ const contactInput = document.querySelector("#contact");
 const message = document.querySelector("#message");
 const summary = document.querySelector("#device-summary");
 const modal = document.querySelector("#payment-modal");
+const scannerModal = document.querySelector("#scanner-modal");
 const purchaseButton = document.querySelector("#purchase-button");
 const confirmPaymentButton = document.querySelector("#confirm-payment");
 const cancelPaymentButton = document.querySelector("#cancel-payment");
+const scanButton = document.querySelector("#scan-button");
+const closeScannerButton = document.querySelector("#close-scanner");
+const scannerVideo = document.querySelector("#scanner-video");
+const scannerFallback = document.querySelector("#scanner-fallback");
+const scannerMessage = document.querySelector("#scanner-message");
 
 let validatedPayload = null;
 let isSubmitting = false;
+let scannerStream = null;
+let scannerIntervalId = null;
+let barcodeDetector = null;
 
 function setMessage(text, type = "") {
   message.textContent = text;
   message.className = `message ${type}`.trim();
+}
+
+function setScannerMessage(text) {
+  scannerMessage.textContent = text;
 }
 
 function setLoadingState(loading) {
@@ -76,6 +89,80 @@ function closeModal() {
   modal.classList.add("hidden");
 }
 
+function openScannerModal() {
+  scannerModal.classList.remove("hidden");
+}
+
+function closeScannerModal() {
+  scannerModal.classList.add("hidden");
+}
+
+function cleanupScanner() {
+  if (scannerIntervalId) {
+    window.clearInterval(scannerIntervalId);
+    scannerIntervalId = null;
+  }
+
+  if (scannerStream) {
+    scannerStream.getTracks().forEach((track) => track.stop());
+    scannerStream = null;
+  }
+
+  scannerVideo.srcObject = null;
+}
+
+async function startScanner() {
+  cleanupScanner();
+  scannerFallback.classList.add("hidden");
+  setScannerMessage("카메라를 준비 중입니다...");
+
+  if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia || !("BarcodeDetector" in window)) {
+    scannerFallback.classList.remove("hidden");
+    setScannerMessage("이 브라우저에서는 실시간 QR 스캔을 지원하지 않습니다. SN을 직접 입력해 주세요.");
+    return;
+  }
+
+  try {
+    if (!barcodeDetector) {
+      barcodeDetector = new window.BarcodeDetector({ formats: ["qr_code"] });
+    }
+
+    scannerStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment" }
+    });
+
+    scannerVideo.srcObject = scannerStream;
+    await scannerVideo.play();
+    setScannerMessage("QR 코드를 화면 중앙에 맞춰 주세요.");
+
+    scannerIntervalId = window.setInterval(async () => {
+      try {
+        const codes = await barcodeDetector.detect(scannerVideo);
+        if (!codes.length) {
+          return;
+        }
+
+        const rawValue = String(codes[0].rawValue || "").trim();
+        if (!rawValue) {
+          return;
+        }
+
+        snInput.value = rawValue.toUpperCase();
+        validatedPayload = null;
+        hideSummary();
+        setMessage("QR 스캔이 완료되었습니다. 연락처를 확인한 뒤 결제를 진행해 주세요.", "success");
+        cleanupScanner();
+        closeScannerModal();
+      } catch {
+        setScannerMessage("QR 인식 중입니다...");
+      }
+    }, 600);
+  } catch {
+    scannerFallback.classList.remove("hidden");
+    setScannerMessage("카메라에 접근할 수 없습니다. 브라우저 권한을 확인하거나 SN을 직접 입력해 주세요.");
+  }
+}
+
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
 
@@ -134,9 +221,26 @@ cancelPaymentButton.addEventListener("click", () => {
   setMessage("결제가 취소되어 업그레이드 상태는 변경되지 않았습니다.");
 });
 
+scanButton.addEventListener("click", async () => {
+  openScannerModal();
+  await startScanner();
+});
+
+closeScannerButton.addEventListener("click", () => {
+  cleanupScanner();
+  closeScannerModal();
+});
+
 modal.addEventListener("click", (event) => {
   if (event.target === modal) {
     closeModal();
+  }
+});
+
+scannerModal.addEventListener("click", (event) => {
+  if (event.target === scannerModal) {
+    cleanupScanner();
+    closeScannerModal();
   }
 });
 
@@ -147,3 +251,5 @@ modal.addEventListener("click", (event) => {
     setMessage("");
   });
 });
+
+window.addEventListener("beforeunload", cleanupScanner);

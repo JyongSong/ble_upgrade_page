@@ -26,13 +26,12 @@ Vercel 环境变量至少需要配置：
 NEXT_PUBLIC_SUPABASE_URL=...
 SUPABASE_SERVICE_ROLE_KEY=...
 THIRD_PARTY_API_KEY=...
-WARRANTY_H5_PATH=/Users/zhiyongsong/warranty-h5
 ```
 
 说明：
 
-- 在 Vercel 上通常不需要 `WARRANTY_H5_PATH`
-- 更推荐直接在 Vercel 项目里配置 `NEXT_PUBLIC_SUPABASE_URL`、`SUPABASE_SERVICE_ROLE_KEY`、`THIRD_PARTY_API_KEY`
+- 直接在 Vercel 项目里配置 `NEXT_PUBLIC_SUPABASE_URL`、`SUPABASE_SERVICE_ROLE_KEY`、`THIRD_PARTY_API_KEY`
+- `WARRANTY_H5_PATH` 仅用于本地开发时复用其他项目的 `.env`，不属于 Vercel 部署必填项
 
 启动前请先确保以下任一条件成立：
 
