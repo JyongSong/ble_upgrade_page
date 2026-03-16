@@ -245,11 +245,23 @@ h1 {
   place-items: center;
 }
 
-.scanner-video {
+.scanner-region,
+.scanner-region video {
   width: 100%;
   min-height: 280px;
-  object-fit: cover;
   display: block;
+}
+
+.scanner-region video {
+  object-fit: cover;
+}
+
+.scanner-region {
+  width: 100%;
+}
+
+.scanner-region > div {
+  border: 0 !important;
 }
 
 .scanner-fallback {

@@ -10,15 +10,14 @@ const confirmPaymentButton = document.querySelector("#confirm-payment");
 const cancelPaymentButton = document.querySelector("#cancel-payment");
 const scanButton = document.querySelector("#scan-button");
 const closeScannerButton = document.querySelector("#close-scanner");
-const scannerVideo = document.querySelector("#scanner-video");
+const scannerRegion = document.querySelector("#scanner-region");
 const scannerFallback = document.querySelector("#scanner-fallback");
 const scannerMessage = document.querySelector("#scanner-message");
 
 let validatedPayload = null;
 let isSubmitting = false;
-let scannerStream = null;
-let scannerIntervalId = null;
-let barcodeDetector = null;
+let qrScanner = null;
+let scannerActive = false;
 
 function setMessage(text, type = "") {
   message.textContent = text;
@@ -98,17 +97,14 @@ function closeScannerModal() {
 }
 
 function cleanupScanner() {
-  if (scannerIntervalId) {
-    window.clearInterval(scannerIntervalId);
-    scannerIntervalId = null;
+  if (qrScanner && scannerActive) {
+    qrScanner
+      .stop()
+      .catch(() => {})
+      .finally(() => {
+        scannerActive = false;
+      });
   }
-
-  if (scannerStream) {
-    scannerStream.getTracks().forEach((track) => track.stop());
-    scannerStream = null;
-  }
-
-  scannerVideo.srcObject = null;
 }
 
 async function startScanner() {
@@ -116,33 +112,30 @@ async function startScanner() {
   scannerFallback.classList.add("hidden");
   setScannerMessage("카메라를 준비 중입니다...");
 
-  if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia || !("BarcodeDetector" in window)) {
+  if (!window.isSecureContext || !window.Html5Qrcode) {
     scannerFallback.classList.remove("hidden");
     setScannerMessage("이 브라우저에서는 실시간 QR 스캔을 지원하지 않습니다. SN을 직접 입력해 주세요.");
     return;
   }
 
   try {
-    if (!barcodeDetector) {
-      barcodeDetector = new window.BarcodeDetector({ formats: ["qr_code"] });
+    if (!qrScanner) {
+      qrScanner = new window.Html5Qrcode("scanner-region");
     }
 
-    scannerStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "environment" }
-    });
-
-    scannerVideo.srcObject = scannerStream;
-    await scannerVideo.play();
     setScannerMessage("QR 코드를 화면 중앙에 맞춰 주세요.");
-
-    scannerIntervalId = window.setInterval(async () => {
-      try {
-        const codes = await barcodeDetector.detect(scannerVideo);
-        if (!codes.length) {
-          return;
-        }
-
-        const rawValue = String(codes[0].rawValue || "").trim();
+    await qrScanner.start(
+      { facingMode: "environment" },
+      {
+        fps: 10,
+        qrbox: (viewfinderWidth, viewfinderHeight) => {
+          const size = Math.floor(Math.min(viewfinderWidth, viewfinderHeight) * 0.72);
+          return { width: size, height: size };
+        },
+        aspectRatio: 1
+      },
+      (decodedText) => {
+        const rawValue = String(decodedText || "").trim();
         if (!rawValue) {
           return;
         }
@@ -153,10 +146,12 @@ async function startScanner() {
         setMessage("QR 스캔이 완료되었습니다. 연락처를 확인한 뒤 결제를 진행해 주세요.", "success");
         cleanupScanner();
         closeScannerModal();
-      } catch {
+      },
+      () => {
         setScannerMessage("QR 인식 중입니다...");
       }
-    }, 600);
+    );
+    scannerActive = true;
   } catch {
     scannerFallback.classList.remove("hidden");
     setScannerMessage("카메라에 접근할 수 없습니다. 브라우저 권한을 확인하거나 SN을 직접 입력해 주세요.");
