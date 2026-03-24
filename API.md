@@ -6,10 +6,11 @@
 
 ## 接口概览
 
-- Base URL：`https://www.aqaralife-service.kr`
+- Base URL：`https://www.aqaralife-service.kr/ble_upgrade`
 - 用途：查询指定设备是否已完成 Zigbee 付费升级
 - 方法：`GET`
-- 路径：`/ble_upgrade/api/device-upgrade-status`
+- 路径：`/api/device-upgrade-status`
+- 完整 URL：`{Base URL}/api/device-upgrade-status?sn=<DEVICE_SN>`
 - 版本：`v1`
 - 认证方式：`Bearer Token`
 - 返回格式：`application/json`
