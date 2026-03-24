@@ -1,3 +1,9 @@
 {
-  "cleanUrls": true
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/ble_upgrade", "destination": "/index.html" },
+    { "source": "/ble_upgrade/", "destination": "/index.html" },
+    { "source": "/ble_upgrade/api/:path*", "destination": "/api/:path*" },
+    { "source": "/ble_upgrade/:path*", "destination": "/:path*" }
+  ]
 }

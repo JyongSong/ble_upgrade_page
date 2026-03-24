@@ -181,7 +181,7 @@ form.addEventListener("submit", async (event) => {
 
   try {
     setLoadingState(true);
-    const result = await postJson("/api/validate", payload);
+    const result = await postJson("/ble_upgrade/api/validate", payload);
     validatedPayload = payload;
     renderSummary(result.device);
     setMessage(result.message, "success");
@@ -200,7 +200,7 @@ confirmPaymentButton.addEventListener("click", async () => {
 
   try {
     setLoadingState(true);
-    const result = await postJson("/api/purchase", validatedPayload);
+    const result = await postJson("/ble_upgrade/api/purchase", validatedPayload);
     renderSummary(result.device);
     setMessage(result.message, "success");
     closeModal();

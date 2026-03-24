@@ -15,7 +15,7 @@ npm start
 默认启动地址：
 
 ```text
-http://localhost:3000
+http://localhost:3000/ble_upgrade
 ```
 
 ## 部署到 Vercel
@@ -61,7 +61,7 @@ SN 校验来源是你已有库里的 `public.shipped_devices` 表。
 
 推荐把下面这些内容发给第三方，而不是直接给数据库访问权限。
 
-- Endpoint: `GET /api/device-upgrade-status?sn=<DEVICE_SN>`
+- Endpoint: `GET /ble_upgrade/api/device-upgrade-status?sn=<DEVICE_SN>`
 - Auth: `Authorization: Bearer <THIRD_PARTY_API_KEY>`
 - Purpose: 查询某个设备是否已购买 Zigbee 升级
 
@@ -69,7 +69,7 @@ SN 校验来源是你已有库里的 `public.shipped_devices` 表。
 
 ```bash
 curl -H "Authorization: Bearer YOUR_API_KEY" \
-  "http://127.0.0.1:3000/api/device-upgrade-status?sn=A01460/LS1ELU01801"
+  "http://127.0.0.1:3000/ble_upgrade/api/device-upgrade-status?sn=A01460/LS1ELU01801"
 ```
 
 成功响应示例：

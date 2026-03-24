@@ -12,6 +12,7 @@ const { sendJson } = require("./lib/response");
 const HOST = "127.0.0.1";
 const PORT = Number(process.env.PORT || 3000);
 const PUBLIC_DIR = path.join(__dirname, "public");
+const BASE_PATH = "/ble_upgrade";
 
 function sendFile(res, filePath) {
   fs.readFile(filePath, (error, content) => {
@@ -34,33 +35,45 @@ function sendFile(res, filePath) {
   });
 }
 
+function stripBase(pathname) {
+  if (pathname === BASE_PATH) return "/";
+  if (pathname.startsWith(BASE_PATH + "/")) return pathname.slice(BASE_PATH.length);
+  return null;
+}
+
 function createServer() {
   return http.createServer((req, res) => {
     const url = new URL(req.url, `http://${req.headers.host || `${HOST}:${PORT}`}`);
     req.query = Object.fromEntries(url.searchParams.entries());
 
-    if (req.method === "POST" && url.pathname === "/api/validate") {
+    const stripped = stripBase(url.pathname);
+    if (stripped === null) {
+      sendJson(res, 404, { message: "Not found." });
+      return;
+    }
+
+    if (req.method === "POST" && stripped === "/api/validate") {
       validateHandler(req, res);
       return;
     }
 
-    if (req.method === "POST" && url.pathname === "/api/purchase") {
+    if (req.method === "POST" && stripped === "/api/purchase") {
       purchaseHandler(req, res);
       return;
     }
 
-    if (req.method === "GET" && url.pathname === "/api/status") {
+    if (req.method === "GET" && stripped === "/api/status") {
       statusHandler(req, res);
       return;
     }
 
-    if (req.method === "GET" && url.pathname === "/api/device-upgrade-status") {
+    if (req.method === "GET" && stripped === "/api/device-upgrade-status") {
       thirdPartyStatusHandler(req, res);
       return;
     }
 
     if (req.method === "GET") {
-      const requestPath = url.pathname === "/" ? "/index.html" : url.pathname;
+      const requestPath = stripped === "/" ? "/index.html" : stripped;
       const filePath = path.normalize(path.join(PUBLIC_DIR, requestPath));
 
       if (!filePath.startsWith(PUBLIC_DIR)) {
@@ -79,7 +92,7 @@ function createServer() {
 if (require.main === module) {
   const server = createServer();
   server.listen(PORT, HOST, () => {
-    console.log(`BLE upgrade page running at http://${HOST}:${PORT}`);
+    console.log(`BLE upgrade page running at http://${HOST}:${PORT}${BASE_PATH}`);
     console.log(`Supabase project: ${config.supabaseUrl || "missing config"}`);
   });
 }

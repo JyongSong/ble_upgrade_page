@@ -8,7 +8,7 @@
 
 - 用途：查询指定设备是否已完成 Zigbee 付费升级
 - 方法：`GET`
-- 路径：`/api/device-upgrade-status`
+- 路径：`/ble_upgrade/api/device-upgrade-status`
 - 版本：`v1`
 - 认证方式：`Bearer Token`
 - 返回格式：`application/json`
@@ -18,7 +18,7 @@
 ### HTTP 示例
 
 ```http
-GET /api/device-upgrade-status?sn=A01460/LS1ELU01801 HTTP/1.1
+GET /ble_upgrade/api/device-upgrade-status?sn=A01460/LS1ELU01801 HTTP/1.1
 Authorization: Bearer YOUR_DEV_API_KEY
 Accept: application/json
 ```
@@ -132,7 +132,7 @@ Accept: application/json
 
 ```bash
 curl -X GET \
-  "http://127.0.0.1:3000/api/device-upgrade-status?sn=A01460/LS1ELU01801" \
+  "http://127.0.0.1:3000/ble_upgrade/api/device-upgrade-status?sn=A01460/LS1ELU01801" \
   -H "Authorization: Bearer YOUR_DEV_API_KEY" \
   -H "Accept: application/json"
 ```
