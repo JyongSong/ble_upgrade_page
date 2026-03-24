@@ -1,9 +1,11 @@
 {
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/ble_upgrade", "destination": "/index.html" },
-    { "source": "/ble_upgrade/", "destination": "/index.html" },
     { "source": "/ble_upgrade/api/:path*", "destination": "/api/:path*" },
-    { "source": "/ble_upgrade/:path*", "destination": "/:path*" }
+    { "source": "/ble_upgrade/vendor/:path*", "destination": "/vendor/:path*" },
+    { "source": "/ble_upgrade/styles.css", "destination": "/styles.css" },
+    { "source": "/ble_upgrade/app.js", "destination": "/app.js" },
+    { "source": "/ble_upgrade", "destination": "/index" },
+    { "source": "/ble_upgrade/", "destination": "/index" }
   ]
 }
