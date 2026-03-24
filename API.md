@@ -1,11 +1,12 @@
 # 设备升级状态查询 API
 
-本文档用于第三方联调开发，说明 `device upgrade status` 查询接口的使用方式。
+本文档说明 `device upgrade status` 查询接口的使用方式，供第三方集成开发参考。
 
-当前文档基于开发联调版本 `v1`。在正式上线前，开发环境域名、认证密钥、示例数据可能会调整，但以下响应字段结构原则上保持不变。
+当前版本：`v1`。响应字段结构保持稳定，如有破坏性变更将提前通知或新增版本。
 
 ## 接口概览
 
+- Base URL：`https://www.aqaralife-service.kr`
 - 用途：查询指定设备是否已完成 Zigbee 付费升级
 - 方法：`GET`
 - 路径：`/ble_upgrade/api/device-upgrade-status`
@@ -19,7 +20,8 @@
 
 ```http
 GET /ble_upgrade/api/device-upgrade-status?sn=A01460/LS1ELU01801 HTTP/1.1
-Authorization: Bearer YOUR_DEV_API_KEY
+Host: www.aqaralife-service.kr
+Authorization: Bearer YOUR_API_KEY
 Accept: application/json
 ```
 
@@ -59,7 +61,7 @@ Accept: application/json
 | 字段名 | 类型 | 可空 | 说明 |
 | --- | --- | --- | --- |
 | `sn` | string | 否 | 设备序列号 |
-| `purchaseStatus` | string | 否 | 购买状态 |
+| `purchaseStatus` | string | 否 | 购买状态（见下方状态定义） |
 | `featureCode` | string | 否 | 升级功能编码，当前固定为 `zigbee` |
 | `paidAt` | string（ISO 8601） | 是 | 支付完成时间，未购买时为 `null` |
 | `updatedAt` | string（ISO 8601） | 是 | 最近一次状态更新时间 |
@@ -113,32 +115,32 @@ Accept: application/json
 }
 ```
 
-## 联调约定
+## 接口约定
 
-- 该接口为第三方只读查询接口。
-- 第三方不能通过该接口修改购买状态。
+- 该接口为第三方只读查询接口，不能修改购买状态。
 - 查询唯一依据是 `sn`。
-- 如果设备存在，但尚未生成升级购买记录，接口会返回 `purchaseStatus: "pending"`。
+- 如果设备存在但尚未生成升级购买记录，接口会返回 `purchaseStatus: "pending"`。
 - 时间字段统一使用 ISO 8601 格式。
 
-## 建议联调流程
+## 集成流程
 
-1. 第三方保存你提供的开发环境 Base URL 和 API Key。
-2. 第三方在需要判断设备是否已开通 Zigbee 升级时，按设备 SN 调用接口。
-3. 当前联调阶段，第三方只需处理 `pending` 和 `paid` 两种状态。
+1. 保存 Base URL 和 API Key。
+2. 在需要判断设备是否已开通 Zigbee 升级时，按设备 SN 调用接口。
+3. 根据 `purchaseStatus` 字段处理业务逻辑（当前只有 `pending` 和 `paid` 两种状态）。
 4. 如果后续增加新的状态值，将通过版本更新或提前通知的方式处理。
 
 ## cURL 调用示例
 
 ```bash
 curl -X GET \
-  "http://127.0.0.1:3000/ble_upgrade/api/device-upgrade-status?sn=A01460/LS1ELU01801" \
-  -H "Authorization: Bearer YOUR_DEV_API_KEY" \
+  "https://www.aqaralife-service.kr/ble_upgrade/api/device-upgrade-status?sn=A01460/LS1ELU01801" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Accept: application/json"
 ```
 
-## 变更说明
+## 变更记录
 
-- 当前阶段：开发联调阶段
-- 兼容性目标：在第三方开发期间保持 `v1` 响应字段稳定
-- 如果后续必须发生破坏性变更，建议新增版本接口，或提前通知第三方
+| 日期 | 版本 | 说明 |
+| --- | --- | --- |
+| 2026-03-13 | v1 | 初始版本，开发联调 |
+| 2026-03-24 | v1 | 正式上线，域名切换至 `www.aqaralife-service.kr` |
