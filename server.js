@@ -67,7 +67,7 @@ function createServer() {
       return;
     }
 
-    if (req.method === "GET" && stripped === "/api/device-upgrade-status") {
+    if ((req.method === "GET" || req.method === "PATCH" || req.method === "POST") && stripped === "/api/device-upgrade-status") {
       thirdPartyStatusHandler(req, res);
       return;
     }
